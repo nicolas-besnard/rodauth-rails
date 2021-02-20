@@ -40,6 +40,17 @@ class RodauthApp < Rodauth::Rails::App
     prefix "/admin"
   end
 
+  configure(:advanced_admin) do
+    enable :login, :logout
+
+    rails_controller { RodauthController }
+
+    prefix "/advanced_admin"
+    after_login { remember_login }
+    already_logged_in { redirect login_redirect }
+    login_return_to_requested_location? true
+  end
+
   configure(:json) do
     enable :jwt, :create_account, :verify_account
     only_json? true
@@ -53,7 +64,15 @@ class RodauthApp < Rodauth::Rails::App
 
     r.rodauth
     r.on("admin") { r.rodauth(:admin) }
-    r.on("json")  { r.rodauth(:json) }
+    r.on("json") { r.rodauth(:json) }
+
+    r.on "advanced_admin" do
+      r.rodauth(:advanced_admin)
+
+      if !rodauth(:advanced_admin).logged_in?
+        rodauth(:advanced_admin).require_authentication
+      end
+    end
 
     if r.path == "/auth1"
       rodauth.require_authentication

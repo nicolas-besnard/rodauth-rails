@@ -6,4 +6,8 @@ Rails.application.routes.draw do
     get :auth2
     get :secondary
   end
+
+  namespace :advanced_admin do
+    resources :dashboard, only: [:index]
+  end
 end
